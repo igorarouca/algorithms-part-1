@@ -107,11 +107,12 @@ class Grid {
 	 * @param n the size of this 2-dimensional grid (n-by-n)
 	 */
 	Grid(int origin, int n) {
-		if (n <= 0)
+		if (n <= 0) {
 			throw new IllegalArgumentException(
 				"Invalid grid size: " + n + 
 				". Grid size (n) has to be greater than zero."
 			);
+		}
 
 		this.origin = origin;
 		this.size = n;
@@ -123,9 +124,11 @@ class Grid {
 	private void initializeSites() {
 		int length = origin + size;
 
-		for (int i = origin; i < length; ++i)
-			for (int j = 1; j < length; ++j)
+		for (int i = origin; i < length; ++i) {
+			for (int j = origin; j < length; ++j) {
 				sites[i][j] = new Site(this, i, j);
+			}
+		}
 	}
 
 	private void initializeUnionFindStructure(int n) {
@@ -140,10 +143,11 @@ class Grid {
 	private void createConnectionsToVirtualTopSite() {
 		Site[] topRowSites = sites[size];
 
-		for (Site site : topRowSites)
+		for (Site site : topRowSites) {
 			unionFind.union(
 				getVirtualTopSiteIndex() , site.getUnionFindIndex()
 			);
+		}
 	}
 
 	int getVirtualTopSiteIndex() {
@@ -153,10 +157,11 @@ class Grid {
 	private void createConnectionsToVirtualBottomSite() {
 		Site[] bottomRowSites = sites[origin];
 
-		for (Site site : bottomRowSites)
+		for (Site site : bottomRowSites) {
 			unionFind.union(
 				getVirtualBottomSiteIndex(), site.getUnionFindIndex()
 			);
+		}
 	}
 
 	private int getVirtualBottomSiteIndex() {
