@@ -1,7 +1,27 @@
-
 /**
+ * The <tt>Percolation<tt> class represents a data structure for simulating
+ * percolation experiments on a N-by-N grid.
+ * <p>
+ * It supports operations to check if a <em>site<em> in a particular position 
+ * of the percolation grid (row,column) is <em>open<em> or <em>full<em>.
+ * A full site is an open site that can be connected to an open site in the 
+ * top row of the grid via a chain of neighboring (left, right, up, down) open 
+ * sites.
+ * <p>
+ * There are also operation to <em>open<em> a site in a give position and check
+ * if the grid <em>percolates<em>. The grid percolates if there is a full site 
+ * in the bottom row. In other words, filling all open sites connected to the 
+ * top row guarantees that at least one open site on the bottom row will also 
+ * be filled.
+ * <p>
+ * This percolation model relies on the class <code>WeightedQuickUnionUF</code>
+ * to perform union-find operations on the percolation grid (i.e. connecting 
+ * sites and finding sites that are connected.
+ * 
  * 
  * @author Igor Arouca
+ * @version 1.0
+ * @since 2015-02-10
  */
 public class Percolation {
 
@@ -10,7 +30,7 @@ public class Percolation {
 	// create N-by-N grid, with all sites blocked
 	/**
      * Initializes an empty Percolation data structure with (N * N) sites.
-     * All sites are initially blocked (status = 0).
+     * All sites are initially BLOCKED.
      * @throws java.lang.IllegalArgumentException if N <= 0
      * @param N the number of objects
      */
@@ -24,7 +44,7 @@ public class Percolation {
 	 * @param j
 	 */
 	public void open(int i, int j) {
-		grid.getSiteAt(i, j).open();
+		grid.getSiteAt(--i, --j).open();
 	}
 
 	/** Is site (i, j) open?
@@ -34,7 +54,7 @@ public class Percolation {
 	 * @return true if the site is open
 	 */
 	public boolean isOpen(int i, int j) {
-		return grid.getSiteAt(i, j).isOpen();
+		return grid.getSiteAt(--i, --j).isOpen();
 	}
 
 	/** Is site (i, j) full?
@@ -44,7 +64,7 @@ public class Percolation {
 	 * @return true if the site is full
 	 */
 	public boolean isFull(int i, int j) {
-		return grid.getSiteAt(i, j).isFull();
+		return grid.getSiteAt(--i, --j).isFull();
 	}
 
 	/** Does the system percolate?
@@ -56,57 +76,35 @@ public class Percolation {
 		return grid.percolates();
 	}
 
-	/**
-	 * 
-	 * @param args
-	 */
-	public static void main(String[] args) {
-
-	}
-
 }
 
 /**
  * The <tt>Grid</tt> class represents a 2-dimensional grid of sites. 
  * Each site is represented by an instance of <code>Site</code>.
- * This implementation supports union-find operations on the grid's sites
+ * Grid positions are zero-based, ranging from (0,0) to (n-1,n-1).
+ * This implementation supports union-find operations on the grid's sites.
  * 
  * @author Igor Arouca
+ * @version 1.0
+ * @since 2015-02-10
  */
 class Grid {
 
 	private static final int VIRTUAL_TOP_SITE_INDEX = 0;
 
-	private int size;				// number of sites
-	private int origin;				// X and Y axes origin
-
-	private Site[][] sites;			// 2-dimensional grid of sites
+	private int size;		// number of sites
+	private Site[][] sites;	// 2-dimensional grid of sites
 
 	// Data structure to support union-find operations on the grid.
 	// If there was an interface UnionFind, this object could be dynamically set
 	private WeightedQuickUnionUF unionFind;
 
 	/**
-	 * Initializes a n-by-n grid with all sites initially blocked.
-	 * The origin is at the top-left corner (1,1),
-	 * with X-axis pointing right and Y-axis pointing down
-	 *  
-	 * @param n the size of this 2-dimensional grid (n-by-n) 
-	 */
-	Grid(int n) {
-		this(1, n);
-	}
-
-	/**
-	 * Initializes a n-by-n grid with all sites initially blocked.
-	 * The origin defines the initial value for both axes.
-	 * For instance, a value of zero for the origin (origin = 0), 
-	 * would set the grid origin to (0,0) 
+	 * Initializes a n-by-n grid with all sites initially blocked 
 	 * 
-	 * @param origin the origin of both x and y axes. 
 	 * @param n the size of this 2-dimensional grid (n-by-n)
 	 */
-	Grid(int origin, int n) {
+	Grid(int n) {
 		if (n <= 0) {
 			throw new IllegalArgumentException(
 				"Invalid grid size: " + n + 
@@ -114,80 +112,68 @@ class Grid {
 			);
 		}
 
-		this.origin = origin;
 		this.size = n;
 
 		initializeSites();
-		initializeUnionFindStructure(n);
+		initializeUnionFindStructure();
 	}
 
 	private void initializeSites() {
-		int length = origin + size;
+		this.sites = new Site[size][size];
 
-		for (int i = origin; i < length; ++i) {
-			for (int j = origin; j < length; ++j) {
+		for (int i = 0; i < size; ++i) {
+			for (int j = 0; j < size; ++j) {
 				sites[i][j] = new Site(this, i, j);
 			}
 		}
 	}
 
-	private void initializeUnionFindStructure(int n) {
+	private void initializeUnionFindStructure() {
 
-		// creates union-find structure with 2 extra nodes for virtual sites
-		this.unionFind = new WeightedQuickUnionUF(n + 2);
+		// creates a union-find structure with 2 extra nodes for virtual sites
+		this.unionFind = new WeightedQuickUnionUF((size * size) + 2);
 
 		createConnectionsToVirtualTopSite();
 		createConnectionsToVirtualBottomSite();
 	}
 
 	private void createConnectionsToVirtualTopSite() {
-		Site[] topRowSites = sites[size];
+		Site[] topRowSites = sites[0];
 
 		for (Site site : topRowSites) {
 			unionFind.union(
-				getVirtualTopSiteIndex() , site.getUnionFindIndex()
+				getVirtualTopSiteUFIndex() , site.getUnionFindIndex()
 			);
 		}
 	}
 
-	int getVirtualTopSiteIndex() {
+	int getVirtualTopSiteUFIndex() {
 		return VIRTUAL_TOP_SITE_INDEX;
 	}
 
 	private void createConnectionsToVirtualBottomSite() {
-		Site[] bottomRowSites = sites[origin];
+		Site[] bottomRowSites = sites[size - 1];
 
 		for (Site site : bottomRowSites) {
 			unionFind.union(
-				getVirtualBottomSiteIndex(), site.getUnionFindIndex()
+				getVirtualBottomUFSiteIndex(), site.getUnionFindIndex()
 			);
 		}
 	}
 
-	private int getVirtualBottomSiteIndex() {
-		return size + 1;
+	private int getVirtualBottomUFSiteIndex() {
+		return (size * size) + 1;
 	}
 
 	/**
-	 * Return integer representing origin of both axes.
-	 * If returned value is 1, it means the grid's origin is (1,1)
+	 * Get site at provided location (row,column)
 	 * 
-	 * @return origin of the grid
-	 */
-	public int getOrigin() {
-		return origin;
-	}
-
-	/**
-	 * Get site at provided location (x,y)
-	 * 
-	 * @param x coordinate in the x-axis
-	 * @param y coordinate in the y-axis
-	 * @return site at location (x,y)
-	 */
-	
-	public Site getSiteAt(int x, int y) {
-		return sites[x][y];
+	 * @param row row index between 0 and (size - 1)
+	 * @param column column index between 0 and (size - 1)
+	 * @return site at location (row,column)
+	 */	
+	public Site getSiteAt(int row, int column) {
+		return sites[row][column];
 	}
 
 	/**
@@ -204,9 +190,15 @@ class Grid {
 		return unionFind;
 	}
 
+	/**
+	 * Determines if the grid percolates by checking if the virtual top site
+	 * is connected to the virtual bottom site.
+	 * 
+	 * @return true if the grid percolates or false otherwise
+	 */
 	public boolean percolates() {
 		return unionFind.connected(
-			getVirtualBottomSiteIndex(), getVirtualTopSiteIndex()
+			getVirtualBottomUFSiteIndex(), getVirtualTopSiteUFIndex()
 		);
 	}
 
@@ -216,16 +208,28 @@ class Site {
 
 	private static enum Status { BLOCKED, OPEN };
 
-	private int x;
-	private int y;
+	private int row;
+	private int column;
 
 	private Grid grid;
 
 	private Status status;
 
-	Site(Grid grid, int x, int y) {
-		this.x = x;
-		this.y = y;
+	Site(Grid grid, int row, int column) {
+		if (row < 0 || row > grid.getSize()) {
+			throw new ArrayIndexOutOfBoundsException(
+				"row index is out of bounds: " + row
+			);
+		}
+
+		if (column < 0 || column > grid.getSize()) {
+			throw new ArrayIndexOutOfBoundsException(
+				"column index is out of bounds: " + column
+			);
+		}
+
+		this.row = row;
+		this.column = column;
 
 		this.grid = grid;
 
@@ -234,7 +238,7 @@ class Site {
 
 	public boolean isFull() {
 		return grid.getUnionFind().connected(
-			grid.getVirtualTopSiteIndex(), this.getUnionFindIndex()
+			grid.getVirtualTopSiteUFIndex(), this.getUnionFindIndex()
 		);
 	}
 
@@ -263,60 +267,72 @@ class Site {
 			getUnionFindIndex(), adjacent.getUnionFindIndex());
 	}
 
-	/**
-	 * 
-	 * @return index of the Site in the union-find structure 
-	 */
 	public int getUnionFindIndex() {		
-		return ((grid.getSize() * x) + y) + 1;
+		return ((grid.getSize() * row) + column) + 1;
 	}
 
 	public Site getLeftAdjacentSite() {
 		Site adjacent = null;
 
-		if (x > grid.getOrigin()) {
-			adjacent = grid.getSiteAt(x - 1, y);
+		if (isNotAtFirstColumn()) {
+			adjacent = grid.getSiteAt(row, column - 1);
 		}
 
 		return adjacent;
+	}
+
+	private boolean isNotAtFirstColumn() {
+		return column > 0;
 	}
 
 	public Site getRightAdjacentSite() {
 		Site adjacent = null;
 
-		if (x < grid.getSize()) {
-			grid.getSiteAt(x + 1, y);
+		if (isNotAtLastColumn()) {
+			grid.getSiteAt(row, column + 1);
 		}
 
 		return adjacent;
+	}
+
+	private boolean isNotAtLastColumn() {
+		return column < grid.getSize() - 1;
 	}
 
 	public Site getTopAdjacentSite() {
 		Site adjacent = null;
 
-		if (y > grid.getOrigin()) {
-			adjacent = grid.getSiteAt(x, y - 1);
+		if (isNotAtFirstRow()) {
+			adjacent = grid.getSiteAt(row - 1, column);
 		}
 
 		return adjacent;
+	}
+
+	private boolean isNotAtFirstRow() {
+		return row > 0;
 	}
 
 	public Site getBottomAdjacentSite() {
 		Site adjacent = null;
 
-		if (y < grid.getSize()) {
-			adjacent = grid.getSiteAt(x, y + 1);
+		if (isNotAtLastRow()) {
+			adjacent = grid.getSiteAt(row + 1, column);
 		}
 
 		return adjacent;
 	}
 
+	private boolean isNotAtLastRow() {
+		return row < grid.getSize() - 1;
+	}
+
 	/**
-	 * return string with Site location and status: (x,y) --> STATUS
+	 * return string with Site location and status: (row,column) --> STATUS
 	 */
 	@Override
 	public String toString() {
-		return "(" + this.x + "," + this.y + ")" + " --> " + this.status;
+		return "(" + this.row + "," + this.column + ")" + " --> " + this.status;
 	}
 
 }
