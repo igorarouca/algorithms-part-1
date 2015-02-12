@@ -279,7 +279,11 @@ public class Percolation {
 		@Override
 		public String toString() {
 			return "(" + this.row + "," + this.column + ")" 
-				+ " --> " + this.status;
+				+ " --> " + getStatus();
+		}
+
+		String getStatus() {
+			return (this.status == 0) ? "BLOCKED" : "OPEN";
 		}
 	}
 
