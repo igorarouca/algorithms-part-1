@@ -46,9 +46,8 @@ public class PercolationStats {
 
 		if (T <= 0) {
 			throw new IllegalArgumentException(
-				"Invalid number of experiments: " + T + 
-				". T has to be greater than zero."
-			);
+				"Invalid number of experiments: " + T
+				+ ". T has to be greater than zero.");
 		}
 
 		this.gridSize = N;
@@ -148,13 +147,11 @@ public class PercolationStats {
 		System.out.printf("%-23s = %.16f\n", "mean", percolationStats.mean());
 
 		System.out.printf(
-			"%-23s = %.16f\n", "stddev", percolationStats.stddev()
-		);
+			"%-23s = %.16f\n", "stddev", percolationStats.stddev());
 
 		System.out.printf(
 			"%-23s = %.16f, %.16f\n\n", "95% confidence interval",
-			percolationStats.confidenceLo(), percolationStats.confidenceHi()
-		);
+			percolationStats.confidenceLo(), percolationStats.confidenceHi());
 	}
 
 }

@@ -43,8 +43,8 @@ public class Percolation {
 	public Percolation(int N) {
 		if (N <= 0) {
 			throw new IllegalArgumentException(
-				"Invalid grid size: " + N + 
-				". Grid size (n) has to be greater than zero.");
+				"Invalid grid size: " + N 
+				+ ". Grid size (n) has to be greater than zero.");
 		}
 
 		this.n = N;
@@ -56,9 +56,11 @@ public class Percolation {
 	private void initializeSites() {
 		this.sites = new Site[n][n];
 
-		for (int i = 0; i < n; ++i)
-			for (int j = 0; j < n; ++j)
+		for (int i = 0; i < n; ++i) {
+			for (int j = 0; j < n; ++j) {
 				sites[i][j] = new Site(i, j);
+			}
+		}
 	}
 
 	private void initializeUnionFindStructure() {
@@ -72,9 +74,10 @@ public class Percolation {
 	private void createConnectionsToVirtualTopSite() {
 		Site[] topRowSites = sites[0];
 
-		for (Site site : topRowSites)
+		for (Site site : topRowSites) {
 			unionFind.union(
 				getVirtualTopSiteUFIndex() , site.getUnionFindIndex());
+		}
 	}
 
 	private int getVirtualTopSiteUFIndex() {
@@ -84,9 +87,10 @@ public class Percolation {
 	private void createConnectionsToVirtualBottomSite() {
 		Site[] bottomRowSites = sites[n - 1];
 
-		for (Site site : bottomRowSites)
+		for (Site site : bottomRowSites) {
 			unionFind.union(
 				getVirtualBottomUFSiteIndex(), site.getUnionFindIndex());
+		}
 	}
 
 	private int getVirtualBottomUFSiteIndex() {
@@ -156,14 +160,12 @@ public class Percolation {
 		Site(int row, int column) {
 			if (row < 0 || row > n) {
 				throw new ArrayIndexOutOfBoundsException(
-					"row index is out of bounds: " + row
-				);
+					"row index is out of bounds: " + row);
 			}
 
 			if (column < 0 || column > n) {
 				throw new ArrayIndexOutOfBoundsException(
-					"column index is out of bounds: " + column
-				);
+					"column index is out of bounds: " + column);
 			}
 
 			this.row = row;
@@ -192,7 +194,7 @@ public class Percolation {
 		 * to all open adjacent sites
 		 */
 		void open() {
-			if (isOpen()) return;
+			if (isOpen()) { return; }
 
 			this.status = OPEN;
 			connectToOpenAdjacentSites();
@@ -206,7 +208,7 @@ public class Percolation {
 		}
 
 		private void connectTo(Site adjacent) {
-			if (adjacent == null || !adjacent.isOpen()) return;
+			if (adjacent == null || !adjacent.isOpen()) { return; }
 	
 			unionFind.union(getUnionFindIndex(), adjacent.getUnionFindIndex());
 		}
@@ -276,8 +278,8 @@ public class Percolation {
 		 */
 		@Override
 		public String toString() {
-			return "(" + this.row + "," + this.column + ")" + 
-				" --> " + this.status;
+			return "(" + this.row + "," + this.column + ")" 
+				+ " --> " + this.status;
 		}
 	}
 
