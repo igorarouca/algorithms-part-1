@@ -180,9 +180,8 @@ public class Percolation {
 		 * @return true if site is full and false otherwise
 		 */
 		boolean isFull() {
-			return unionFind.connected(
-				getVirtualTopSiteUFIndex(), this.getUnionFindIndex()
-			);
+			return isOpen() && unionFind.connected(
+				getVirtualTopSiteUFIndex(), this.getUnionFindIndex());
 		}
 
 		boolean isOpen() {
